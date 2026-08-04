@@ -128,3 +128,61 @@ def weather_tool(
             "success": False,
             "error": str(e)
         }
+
+if __name__ == "__main__":
+
+    test_cases = [
+        {
+            "name": "Current Weather (Place)",
+            "url": CURRENT_WEATHER,
+            "place": "Hyderabad",
+        },
+        {
+            "name": "Forecast (Place)",
+            "url": FORECAST,
+            "place": "Hyderabad",
+        },
+        {
+            "name": "Air Pollution (Place)",
+            "url": AIR_POLLUTION,
+            "place": "Hyderabad",
+        },
+        {
+            "name": "Geocoding",
+            "url": GEOCODING,
+            "place": "Hyderabad",
+        },
+        {
+            "name": "Current Weather (Coordinates)",
+            "url": CURRENT_WEATHER,
+            "latitude": 17.3850,
+            "longitude": 78.4867,
+        },
+        {
+            "name": "Forecast (Coordinates)",
+            "url": FORECAST,
+            "latitude": 17.3850,
+            "longitude": 78.4867,
+        },
+        {
+            "name": "Air Pollution (Coordinates)",
+            "url": AIR_POLLUTION,
+            "latitude": 17.3850,
+            "longitude": 78.4867,
+        },
+    ]
+
+    for test in test_cases:
+        print("=" * 80)
+        print(f"Test : {test['name']}")
+
+        result = weather_tool.invoke({
+            "url": test["url"],
+            "place": test.get("place"),
+            "latitude": test.get("latitude"),
+            "longitude": test.get("longitude"),
+        })
+
+        print("Result:")
+        print(result)
+        print()
