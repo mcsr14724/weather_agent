@@ -1,5 +1,4 @@
 from langchain_core.tools import tool
-from typing import Union,Tuple
 from app.config import Config
 import requests
 
@@ -17,35 +16,39 @@ SUPPORTED_URLS = {
     GEOCODING,
 }
 
+
 @tool
 def weather_tool(
     url: str,
-    place: Union[str, Tuple[float, float]]
+    place: str | None = None,
+    latitude: float | None = None,
+    longitude: float | None = None,
 ):
     """
     A generic OpenWeather API tool.
 
-    Use this tool to call any OpenWeather API endpoint.
+    Use this tool to call any supported OpenWeather API endpoint.
 
     Args:
-        url: The OpenWeather API endpoint to call (for example,
-            current weather, forecast, air pollution, geocoding, or history).
+        url: One of the following endpoints:
+            - /data/2.5/weather
+            - /data/2.5/forecast
+            - /data/2.5/air_pollution
+            - /geo/1.0/direct
 
-            url values:
-            If current weather -> /data/2.5/weather
-            If forecast -> /data/2.5/forecast
-            If Air pollution -> /data/2.5/air_pollution
-            If geocoding -> /geo/1.0/direct
+        place:
+            Name of the city or location (e.g. "Hyderabad").
+            If provided, the tool first converts it to latitude and longitude
+            using the OpenWeather Geocoding API.
 
-        place: The location for the request. This can be either:
-            - A city/place name as a string (e.g., "Hyderabad"). The tool
-              will first obtain the latitude and longitude using the
-              OpenWeather Geocoding API before calling the requested endpoint.
-            - A tuple of (latitude, longitude). The tool will directly call
-              the requested endpoint using these coordinates.
+        latitude:
+            Latitude of the location. Used when `place` is not provided.
+
+        longitude:
+            Longitude of the location. Used when `place` is not provided.
 
     Returns:
-        The JSON response returned by the specified OpenWeather API endpoint.
+        JSON response from the requested OpenWeather API endpoint.
     """
 
     url = url.strip()
@@ -57,8 +60,9 @@ def weather_tool(
         }
 
     try:
-        # If place is a city name, convert it to coordinates
-        if isinstance(place, str):
+        # Use place name
+        if place is not None:
+
             geo_response = requests.get(
                 f"{BASE_URL}{GEOCODING}",
                 params={
@@ -81,7 +85,7 @@ def weather_tool(
             latitude = locations[0]["lat"]
             longitude = locations[0]["lon"]
 
-            if url==GEOCODING:
+            if url == GEOCODING:
                 return {
                     "success": True,
                     "data": {
@@ -92,10 +96,15 @@ def weather_tool(
                         "state": locations[0].get("state"),
                     }
                 }
-        else:
-            latitude, longitude = place
 
-        # Call the requested endpoint
+        # Use coordinates
+        else:
+            if latitude is None or longitude is None:
+                return {
+                    "success": False,
+                    "error": "Either 'place' or both 'latitude' and 'longitude' must be provided."
+                }
+
         response = requests.get(
             f"{BASE_URL}{url}",
             params={
