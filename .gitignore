@@ -1,0 +1,66 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# LangGraph / Checkpoints
+checkpoints/
+*.sqlite
+*.db
+
+# Mongo local data (if any)
+mongodb_data/
+
+# Redis dump
+dump.rdb
+
+# Docker
+*.pid
+
+# Render
+.render/
+
+# RQ
+rq_worker.log
+
+# Misc
+*.tmp
+*.bak
