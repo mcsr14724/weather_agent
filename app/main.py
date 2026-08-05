@@ -1,25 +1,18 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.chat import router
 
-app=FastAPI(
-    title="Weather Agent",
-    description="AI-powered weather assistant built with FastAPI and LangGraph.",
-    version="1.0.0"
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-app.include_router(router=router)
-
-@app.get("/")
-def root():
-    return {
-        "message": "Weather Agent is running"
-    }
-
-if __name__=="__main__":
-    import uvicorn
-
-    uvicorn.run(
-        "app.main:app",
-        reload=True
-    )
+app.include_router(router)
