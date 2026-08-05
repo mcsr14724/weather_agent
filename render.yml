@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: weather-agent
+    runtime: python
+
+    plan: free
+
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requiremnets.txt
+
+    startCommand: uvicorn app.main:app --host 0.0.0.0 $PORT
+
+    autodeploy: true
+
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+
+      - key: OPEN_WEATHER_API_KEY
+        sync: false
+
+      - key: MONGODB_URI
+        sync: false
+
+      - key: PYTHON_VERSION
+        sync: 3.11.9
