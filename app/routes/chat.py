@@ -3,11 +3,15 @@ from app.schemas.chat import ChatRequest,ChatResponse
 from app.graph.graph import graph
 from langchain_core.messages import HumanMessage
 from app.utils.extract_response import extract_response
+import uuid
 
 router=APIRouter(prefix="/chat",tags=["chat"])
 
 @router.post("/", response_model=ChatResponse)
 def chat(request: ChatRequest):
+
+    thread_id = request.thread_id or str(uuid.uuid4())
+
     try:
         result = graph.invoke(
             {
@@ -17,7 +21,7 @@ def chat(request: ChatRequest):
             },
             config={
                 "configurable":{
-                    "thread_id":request.thread_id
+                    "thread_id":thread_id
                 }
             }
         )
