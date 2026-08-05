@@ -1,6 +1,7 @@
 from langchain.chat_models import init_chat_model
 from app.config import Config
 from app.graph.tools import weather_tool
+from app.graph.state import state
 
 
 llm=init_chat_model(
@@ -11,5 +12,15 @@ llm=init_chat_model(
 
 llm_with_tools=llm.bind_tools([weather_tool])
 
+def chatbot(state:state):
+    """
+    LLM node.
+    Receives the conversation history and returns the next AI message.
+    """
+
+    response=llm_with_tools.invoke(state["messages"])
+
+    return {"messages":[response]}
+
 if __name__=="__main__":
-    print(llm_with_tools.invoke("get weather at karalapadu"))
+    print(chatbot({"messages":["what is weather in karalapadu"]}))
