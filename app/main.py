@@ -3,7 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.chat import router
 
-app = FastAPI()
+app = FastAPI(title="Weather Agent API")
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "Weather Agent API is running 🚀",
+        "docs": "/docs"
+    }
+
 
 app.add_middleware(
     CORSMiddleware,
