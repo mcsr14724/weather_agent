@@ -27,6 +27,7 @@ def chat(request: ChatRequest):
         )
 
         return ChatResponse(
+            thread_id=thread_id,
             response=extract_response(result["messages"][-1])
         )
 
@@ -43,4 +44,4 @@ if __name__ == "__main__":
 
     response = chat(request)
 
-    print(response.response)
+    print(response)
