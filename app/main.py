@@ -9,8 +9,7 @@ app = FastAPI(title="Weather Agent API")
 @app.get("/")
 def root():
     return {
-        "message": "Weather Agent API is running",
-        "docs": "/docs"
+        "message": "Weather Agent API is running"
     }
 
 
