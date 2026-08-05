@@ -14,6 +14,11 @@ def chat(request: ChatRequest):
                 "messages": [
                     HumanMessage(content=request.message)
                 ]
+            },
+            config={
+                "configurable":{
+                    "thread_id":request.thread_id
+                }
             }
         )
 
