@@ -3,7 +3,7 @@ import ChatContainer from "./components/ChatContainer";
 
 function App() {
   return (
-    <div className="flex h-screen flex-col bg-slate-900">
+    <div className="flex min-h-screen flex-col bg-slate-900">
       <Navbar />
 
       <div className="mx-auto flex w-full max-w-4xl flex-1">

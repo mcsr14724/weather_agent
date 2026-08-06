@@ -67,7 +67,7 @@ export default function ChatContainer() {
     }
 
     return (
-        <div className="flex h-full w-full flex-col">
+        <div className="flex min-h-0 w-full flex-1 flex-col">
             <div className="flex-1 space-y-4 overflow-y-auto p-4">
                 {messages.map((msg, index) => (
                     <ChatMessage
