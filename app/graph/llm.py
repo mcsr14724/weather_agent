@@ -18,7 +18,9 @@ def chatbot(state:state):
     Receives the conversation history and returns the next AI message.
     """
 
-    response=llm_with_tools.invoke(state["messages"])
+    messages = state["messages"][-20:]
+
+    response=llm_with_tools.invoke(messages)
 
     return {"messages":[response]}
 
