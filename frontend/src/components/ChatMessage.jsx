@@ -7,7 +7,7 @@ export default function ChatMessage({ sender, text }) {
     return (
         <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
             <div
-                className={`max-w-[75%] rounded-2xl px-4 py-3 break-words ${isUser
+                className={`max-w-[75%] overflow-hidden rounded-2xl px-4 py-3 ${isUser
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-white"
                     }`}
@@ -76,17 +76,17 @@ export default function ChatMessage({ sender, text }) {
                                 </blockquote>
                             ),
 
-                            code({ inline, children }) {
-                                return inline ? (
-                                    <code className="bg-gray-900 px-1.5 py-0.5 rounded text-sm">
-                                        {children}
-                                    </code>
-                                ) : (
-                                    <pre className="bg-gray-900 rounded-lg p-4 overflow-x-auto my-3">
-                                        <code>{children}</code>
-                                    </pre>
-                                );
-                            },
+                            pre: ({ children }) => (
+                                <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 my-3">
+                                    {children}
+                                </pre>
+                            ),
+
+                            code: ({ children, className }) => (
+                                <code className={className}>
+                                    {children}
+                                </code>
+                            ),
 
                             a: ({ href, children }) => (
                                 <a
