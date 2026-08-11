@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../services/api";
 
 import ChatInput from "./ChatInput";
@@ -9,13 +9,30 @@ export default function ChatContainer() {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const [language, setLanguage] = useState("en-IN");
+
+    // Reference to the bottom of the message area
+    const messagesEndRef = useRef(null);
+
+    // Automatically scroll to the latest message
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({
+            behavior: "smooth",
+        });
+    }, [messages, loading]);
+
     async function sendMessage(message) {
+        if (!message.trim()) {
+            return;
+        }
+
         // Add user's message
         setMessages((prev) => [
             ...prev,
             {
                 sender: "user",
                 text: message,
+                language: language,
             },
         ]);
 
@@ -28,14 +45,13 @@ export default function ChatContainer() {
                 message,
             };
 
-            // Send thread_id only if it already exists
             if (threadId) {
                 payload.thread_id = threadId;
             }
 
             const res = await api.post("/chat", payload);
 
-            // Save generated thread_id (first request)
+            // Save thread ID
             if (res.data.thread_id) {
                 localStorage.setItem(
                     "thread_id",
@@ -43,22 +59,24 @@ export default function ChatContainer() {
                 );
             }
 
-            // Add assistant's response
+            // Add assistant response
             setMessages((prev) => [
                 ...prev,
                 {
                     sender: "assistant",
                     text: res.data.response,
+                    language: language,
                 },
             ]);
         } catch (err) {
-            console.error(err);
+            console.error("Backend error:", err);
 
             setMessages((prev) => [
                 ...prev,
                 {
                     sender: "assistant",
                     text: "Unable to contact backend.",
+                    language: language,
                 },
             ]);
         } finally {
@@ -67,20 +85,36 @@ export default function ChatContainer() {
     }
 
     return (
-        <div className="flex min-h-0 w-full flex-1 flex-col">
-            <div className="flex-1 space-y-4 overflow-y-auto p-4">
-                {messages.map((msg, index) => (
-                    <ChatMessage
-                        key={index}
-                        sender={msg.sender}
-                        text={msg.text}
-                    />
-                ))}
+        <div className="flex h-full min-h-0 w-full flex-col">
 
-                {loading && <Loading />}
+            {/* Messages */}
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                <div className="space-y-4">
+
+                    {messages.map((msg, index) => (
+                        <ChatMessage
+                            key={index}
+                            sender={msg.sender}
+                            text={msg.text}
+                            language={msg.language}
+                        />
+                    ))}
+
+                    {loading && <Loading />}
+
+                    {/* Invisible element at the bottom */}
+                    <div ref={messagesEndRef} />
+                </div>
             </div>
 
-            <ChatInput onSend={sendMessage} />
+            {/* Input stays at bottom */}
+            <div className="shrink-0">
+                <ChatInput
+                    onSend={sendMessage}
+                    language={language}
+                    onLanguageChange={setLanguage}
+                />
+            </div>
         </div>
     );
 }

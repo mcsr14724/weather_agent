@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useState } from "react";
+
 import {
     Copy,
     Check,
@@ -9,7 +10,11 @@ import {
     Square,
 } from "lucide-react";
 
-export default function ChatMessage({ sender, text }) {
+export default function ChatMessage({
+    sender,
+    text,
+    language = "en-IN",
+}) {
     const isUser = sender === "user";
 
     const [speaking, setSpeaking] = useState(false);
@@ -17,28 +22,64 @@ export default function ChatMessage({ sender, text }) {
 
     function speakText() {
         if (!("speechSynthesis" in window)) {
-            alert("Text-to-speech is not supported in this browser.");
+            alert(
+                "Text-to-speech is not supported in this browser."
+            );
             return;
         }
 
-        // Stop speaking if already speaking
+        // Stop current speech
         if (speaking) {
             window.speechSynthesis.cancel();
             setSpeaking(false);
             return;
         }
 
-        // Remove markdown formatting before speaking
+        // Remove markdown before speaking
         const plainText = text
             .replace(/```[\s\S]*?```/g, "")
             .replace(/[#*_>`~-]/g, "")
-            .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+            .replace(
+                /\[([^\]]+)\]\([^)]+\)/g,
+                "$1"
+            );
 
-        const utterance = new SpeechSynthesisUtterance(plainText);
+        const utterance =
+            new SpeechSynthesisUtterance(plainText);
 
-        utterance.lang = "en-IN";
+        /*
+         * IMPORTANT:
+         *
+         * This is now controlled by the language
+         * selected in ChatInput.
+         *
+         * English → en-IN
+         * Telugu  → te-IN
+         */
+        utterance.lang = language;
+
         utterance.rate = 1;
         utterance.pitch = 1;
+
+        /*
+         * Find a voice matching the selected language.
+         */
+        const voices =
+            window.speechSynthesis.getVoices();
+
+        const languagePrefix =
+            language.toLowerCase().split("-")[0];
+
+        const matchingVoice = voices.find(
+            (voice) =>
+                voice.lang
+                    .toLowerCase()
+                    .startsWith(languagePrefix)
+        );
+
+        if (matchingVoice) {
+            utterance.voice = matchingVoice;
+        }
 
         utterance.onstart = () => {
             setSpeaking(true);
@@ -48,7 +89,12 @@ export default function ChatMessage({ sender, text }) {
             setSpeaking(false);
         };
 
-        utterance.onerror = () => {
+        utterance.onerror = (event) => {
+            console.error(
+                "Speech synthesis error:",
+                event
+            );
+
             setSpeaking(false);
         };
 
@@ -65,7 +111,10 @@ export default function ChatMessage({ sender, text }) {
                 setCopied(false);
             }, 1500);
         } catch (error) {
-            console.error("Copy failed:", error);
+            console.error(
+                "Copy failed:",
+                error
+            );
         }
     }
 
@@ -85,16 +134,24 @@ export default function ChatMessage({ sender, text }) {
                 }, 1500);
             }
         } catch (error) {
-            // User cancelled the share dialog
+            /*
+             * AbortError means the user simply
+             * cancelled the share dialog.
+             */
             if (error.name !== "AbortError") {
-                console.error("Share failed:", error);
+                console.error(
+                    "Share failed:",
+                    error
+                );
             }
         }
     }
 
     return (
         <div
-            className={`flex ${isUser ? "justify-end" : "justify-start"
+            className={`flex ${isUser
+                    ? "justify-end"
+                    : "justify-start"
                 }`}
         >
             <div
@@ -107,7 +164,7 @@ export default function ChatMessage({ sender, text }) {
                     text
                 ) : (
                     <>
-                        {/* AI Response */}
+                        {/* AI response */}
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
@@ -117,71 +174,101 @@ export default function ChatMessage({ sender, text }) {
                                     </p>
                                 ),
 
-                                strong: ({ children }) => (
+                                strong: ({
+                                    children,
+                                }) => (
                                     <strong className="font-bold">
                                         {children}
                                     </strong>
                                 ),
 
-                                em: ({ children }) => (
+                                em: ({
+                                    children,
+                                }) => (
                                     <em className="italic">
                                         {children}
                                     </em>
                                 ),
 
-                                h1: ({ children }) => (
-                                    <h1 className="text-2xl font-bold mb-3">
+                                h1: ({
+                                    children,
+                                }) => (
+                                    <h1 className="mb-3 text-2xl font-bold">
                                         {children}
                                     </h1>
                                 ),
 
-                                h2: ({ children }) => (
-                                    <h2 className="text-xl font-bold mb-3">
+                                h2: ({
+                                    children,
+                                }) => (
+                                    <h2 className="mb-3 text-xl font-bold">
                                         {children}
                                     </h2>
                                 ),
 
-                                h3: ({ children }) => (
-                                    <h3 className="text-lg font-bold mb-2">
+                                h3: ({
+                                    children,
+                                }) => (
+                                    <h3 className="mb-2 text-lg font-bold">
                                         {children}
                                     </h3>
                                 ),
 
-                                ul: ({ children }) => (
-                                    <ul className="list-disc pl-6 mb-3 space-y-1">
+                                ul: ({
+                                    children,
+                                }) => (
+                                    <ul className="mb-3 list-disc space-y-1 pl-6">
                                         {children}
                                     </ul>
                                 ),
 
-                                ol: ({ children }) => (
-                                    <ol className="list-decimal pl-6 mb-3 space-y-1">
+                                ol: ({
+                                    children,
+                                }) => (
+                                    <ol className="mb-3 list-decimal space-y-1 pl-6">
                                         {children}
                                     </ol>
                                 ),
 
-                                li: ({ children }) => (
+                                li: ({
+                                    children,
+                                }) => (
                                     <li>{children}</li>
                                 ),
 
-                                blockquote: ({ children }) => (
-                                    <blockquote className="border-l-4 border-gray-500 pl-4 italic my-3">
+                                blockquote: ({
+                                    children,
+                                }) => (
+                                    <blockquote className="my-3 border-l-4 border-gray-500 pl-4 italic">
                                         {children}
                                     </blockquote>
                                 ),
 
-                                pre: ({ children }) => (
-                                    <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 my-3">
+                                pre: ({
+                                    children,
+                                }) => (
+                                    <pre className="my-3 overflow-x-auto rounded-lg bg-gray-900 p-4">
                                         {children}
                                     </pre>
                                 ),
 
-                                code: ({ children, className }) => (
-                                    <code className={className}>
+                                code: ({
+                                    children,
+                                    className,
+                                }) => (
+                                    <code
+                                        className={
+                                            className
+                                        }
+                                    >
                                         {children}
                                     </code>
                                 ),
 
-                                a: ({ href, children }) => (
+                                a: ({
+                                    href,
+                                    children,
+                                }) => (
                                     <a
                                         href={href}
                                         target="_blank"
@@ -196,7 +283,7 @@ export default function ChatMessage({ sender, text }) {
                             {text}
                         </ReactMarkdown>
 
-                        {/* Action buttons */}
+                        {/* ChatGPT-style actions */}
                         <div className="mt-3 flex items-center gap-3">
                             {/* Copy */}
                             <button

@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function ChatInput({ onSend }) {
+export default function ChatInput({
+    onSend,
+    language,
+    onLanguageChange,
+}) {
     const [message, setMessage] = useState("");
     const [listening, setListening] = useState(false);
-    const [language, setLanguage] = useState("en-IN");
 
     const recognitionRef = useRef(null);
 
@@ -13,8 +16,8 @@ export default function ChatInput({ onSend }) {
             window.webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
-            console.log(
-                "Speech recognition is not supported in this browser."
+            console.warn(
+                "Speech Recognition is not supported in this browser."
             );
             return;
         }
@@ -23,24 +26,26 @@ export default function ChatInput({ onSend }) {
 
         recognition.continuous = false;
         recognition.interimResults = false;
-        recognition.lang = language;
+
+        recognition.onresult = (event) => {
+            const transcript =
+                event.results[0][0].transcript;
+
+            setMessage((prev) => {
+                if (prev.trim()) {
+                    return `${prev} ${transcript}`;
+                }
+
+                return transcript;
+            });
+        };
 
         recognition.onstart = () => {
             setListening(true);
         };
 
-        recognition.onresult = (event) => {
-            let transcript = "";
-
-            for (
-                let i = event.resultIndex;
-                i < event.results.length;
-                i++
-            ) {
-                transcript += event.results[i][0].transcript;
-            }
-
-            setMessage(transcript);
+        recognition.onend = () => {
+            setListening(false);
         };
 
         recognition.onerror = (event) => {
@@ -52,16 +57,12 @@ export default function ChatInput({ onSend }) {
             setListening(false);
         };
 
-        recognition.onend = () => {
-            setListening(false);
-        };
-
         recognitionRef.current = recognition;
 
         return () => {
             recognition.stop();
         };
-    }, [language]);
+    }, []);
 
     function startListening() {
         if (!recognitionRef.current) {
@@ -72,45 +73,72 @@ export default function ChatInput({ onSend }) {
         }
 
         try {
+            // Always use currently selected language
+            recognitionRef.current.lang = language;
+
+            if (listening) {
+                recognitionRef.current.stop();
+                return;
+            }
+
             recognitionRef.current.start();
         } catch (error) {
-            console.error("Could not start speech recognition:", error);
-        }
-    }
-
-    function stopListening() {
-        if (recognitionRef.current) {
-            recognitionRef.current.stop();
-        }
-    }
-
-    function handleVoiceClick() {
-        if (listening) {
-            stopListening();
-        } else {
-            startListening();
+            console.error(
+                "Could not start speech recognition:",
+                error
+            );
         }
     }
 
     function handleSubmit(event) {
         event.preventDefault();
 
-        const trimmedMessage = message.trim();
-
-        if (!trimmedMessage) {
+        if (!message.trim() || listening) {
             return;
         }
 
-        onSend(trimmedMessage);
+        onSend(message.trim());
 
         setMessage("");
+    }
+
+    function handleKeyDown(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+
+            if (!message.trim()) {
+                return;
+            }
+
+            onSend(message.trim());
+
+            setMessage("");
+        }
     }
 
     return (
         <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 border-t border-slate-700 p-4"
+            className="flex items-center gap-2 p-4"
         >
+            {/* Language selector */}
+            <select
+                value={language}
+                onChange={(event) =>
+                    onLanguageChange(event.target.value)
+                }
+                className="rounded-lg bg-gray-800 px-2 py-2 text-sm text-white outline-none"
+                title="Select language"
+            >
+                <option value="en-IN">
+                    English
+                </option>
+
+                <option value="te-IN">
+                    తెలుగు
+                </option>
+            </select>
+
             {/* Text input */}
             <input
                 type="text"
@@ -118,44 +146,33 @@ export default function ChatInput({ onSend }) {
                 onChange={(event) =>
                     setMessage(event.target.value)
                 }
+                onKeyDown={handleKeyDown}
                 placeholder="Ask about the weather..."
-                className="flex-1 rounded-xl bg-slate-800 px-4 py-3 text-white outline-none placeholder:text-gray-400"
+                className="min-w-0 flex-1 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-blue-500"
             />
-
-            {/* Language selector */}
-            <select
-                value={language}
-                onChange={(event) =>
-                    setLanguage(event.target.value)
-                }
-                disabled={listening}
-                className="rounded-xl bg-slate-800 px-3 py-3 text-white outline-none disabled:opacity-50"
-            >
-                <option value="en-IN">English</option>
-                <option value="te-IN">తెలుగు</option>
-            </select>
 
             {/* Microphone */}
             <button
                 type="button"
-                onClick={handleVoiceClick}
-                className={`rounded-xl px-4 py-3 text-white ${listening
-                        ? "bg-red-600 hover:bg-red-700"
-                        : "bg-slate-700 hover:bg-slate-600"
+                onClick={startListening}
+                className={`flex h-11 w-11 items-center justify-center rounded-lg transition ${listening
+                        ? "bg-red-600 text-white"
+                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                     }`}
                 title={
                     listening
                         ? "Stop listening"
-                        : "Start voice input"
+                        : "Voice input"
                 }
             >
-                {listening ? "⏹️" : "🎤"}
+                {listening ? "■" : "🎤"}
             </button>
 
             {/* Send */}
             <button
                 type="submit"
-                className="rounded-xl bg-blue-600 px-5 py-3 text-white hover:bg-blue-700"
+                disabled={!message.trim()}
+                className="rounded-lg bg-blue-600 px-5 py-3 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
                 Send
             </button>
