@@ -7,12 +7,3 @@ client = MongoClient(
     Config.MONGODB_URI,
     server_api=ServerApi("1"),
 )
-
-if __name__ == "__main__":
-    try:
-        client.admin.command("ping")
-
-        print("MongoDB Atlas connected successfully")
-
-    except Exception as e:
-        print(e)

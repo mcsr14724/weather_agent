@@ -36,12 +36,3 @@ def chat(request: ChatRequest):
             status_code=500,
             detail=str(e)
         )
-
-if __name__ == "__main__":
-    request = ChatRequest(
-        message="What is the weather in Karalapadu?"
-    )
-
-    response = chat(request)
-
-    print(response)
