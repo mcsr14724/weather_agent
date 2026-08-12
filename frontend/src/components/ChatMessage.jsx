@@ -155,7 +155,7 @@ export default function ChatMessage({
                 }`}
         >
             <div
-                className={`max-w-[75%] min-w-0 overflow-hidden rounded-2xl px-4 py-3 ${isUser
+                className={`max-w-[85%] sm:max-w-[75%] lg:max-w-[70%] min-w-0 overflow-hidden rounded-2xl px-4 py-3 ${isUser
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-white"
                     }`}

@@ -87,34 +87,42 @@ export default function ChatContainer() {
     return (
         <div className="flex h-full min-h-0 w-full flex-col">
 
-            {/* Messages */}
-            <div className="min-h-0 flex-1 overflow-y-auto p-4">
-                <div className="space-y-4">
+            {/* Full-width scrolling area */}
+            <div className="min-h-0 flex-1 overflow-y-auto">
 
-                    {messages.map((msg, index) => (
-                        <ChatMessage
-                            key={index}
-                            sender={msg.sender}
-                            text={msg.text}
-                            language={msg.language}
-                        />
-                    ))}
+                {/* Centered message content */}
+                <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8">
+                    <div className="space-y-4 py-4">
 
-                    {loading && <Loading />}
+                        {messages.map((msg, index) => (
+                            <ChatMessage
+                                key={index}
+                                sender={msg.sender}
+                                text={msg.text}
+                                language={msg.language}
+                            />
+                        ))}
 
-                    {/* Invisible element at the bottom */}
-                    <div ref={messagesEndRef} />
+                        {loading && <Loading />}
+
+                        <div ref={messagesEndRef} />
+
+                    </div>
+                </div>
+
+            </div>
+
+            {/* Full-width input area */}
+            <div className="shrink-0">
+                <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-8">
+                    <ChatInput
+                        onSend={sendMessage}
+                        language={language}
+                        onLanguageChange={setLanguage}
+                    />
                 </div>
             </div>
 
-            {/* Input stays at bottom */}
-            <div className="shrink-0">
-                <ChatInput
-                    onSend={sendMessage}
-                    language={language}
-                    onLanguageChange={setLanguage}
-                />
-            </div>
         </div>
     );
 }

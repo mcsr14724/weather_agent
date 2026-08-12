@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Mic, Square } from "lucide-react";
 
 export default function ChatInput({
     onSend,
@@ -155,17 +156,21 @@ export default function ChatInput({
             <button
                 type="button"
                 onClick={startListening}
-                className={`flex h-11 w-11 items-center justify-center rounded-lg transition ${listening
+                className={`flex h-11 w-11 items-center justify-center rounded-full transition ${listening
                         ? "bg-red-600 text-white"
                         : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                     }`}
                 title={
                     listening
-                        ? "Stop listening"
+                        ? "Stop recording"
                         : "Voice input"
                 }
             >
-                {listening ? "■" : "🎤"}
+                {listening ? (
+                    <Square size={18} fill="currentColor" />
+                ) : (
+                    <Mic size={20} />
+                )}
             </button>
 
             {/* Send */}
